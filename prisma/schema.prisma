@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  PATIENT
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role
+
+  doctor    Doctor?
+  patient   Patient?
+}
+
+model Doctor {
+  id              String              @id @default(uuid())
+  userId          String              @unique
+  specialization  String
+
+  user            User                @relation(fields: [userId], references: [id])
+  availabilities  DoctorAvailability[]
+  appointments    Appointment[]
+}
+
+model Patient {
+  id           String         @id @default(uuid())
+  userId       String         @unique
+
+  user         User           @relation(fields: [userId], references: [id])
+  appointments Appointment[]
+}
+
+model DoctorAvailability {
+  id        String   @id @default(uuid())
+  doctorId String
+  startTime DateTime
+  endTime   DateTime
+
+  doctor   Doctor   @relation(fields: [doctorId], references: [id])
+
+  @@index([doctorId, startTime, endTime])
+}
+
+model Appointment {
+  id         String   @id @default(uuid())
+  doctorId  String
+  patientId String
+  startTime DateTime
+  endTime   DateTime
+  status     AppointmentStatus @default(BOOKED)
+
+  doctor   Doctor   @relation(fields: [doctorId], references: [id])
+  patient Patient @relation(fields: [patientId], references: [id])
+
+  @@index([doctorId, startTime, endTime])
+  @@index([patientId])
+}
+
+enum AppointmentStatus {
+  BOOKED
+  CANCELLED
+  COMPLETED
+}
