@@ -9,7 +9,7 @@ export const chatWithBot = async (req, res) => {
       return res.status(400).json({ message: "Message is required" });
     }
 
-    // STEP 1: Ask AI to extract structured info
+    
     const extractionPrompt = [
       {
         role: "system",
@@ -50,7 +50,7 @@ Respond ONLY in JSON like:
       });
     }
 
-    // STEP 2: Query DB for available doctors
+    
     const doctors = await prisma.doctor.findMany({
       where: {
         specialty: {
@@ -79,7 +79,7 @@ Respond ONLY in JSON like:
       },
     });
 
-    // STEP 3: Send results back to AI for natural reply
+    
     const finalPrompt = [
       {
         role: "system",
